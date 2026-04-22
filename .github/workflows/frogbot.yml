@@ -18,7 +18,7 @@ jobs:
         env:
           JF_URL: ${{ secrets.JF_URL }}
         with:
-          oidc-provider-name: github-oidc
+          oidc-provider-name: github-oidc-test
       - name: Run Frogbot Scan
         uses: jfrog/frogbot@v2
         env:
