@@ -1,42 +1,30 @@
 name: "Frogbot PR Scan"
-on: 
+on:
   pull_request:
-    branches: [ "main" ]
-
+    branches: ["main"]
 permissions:
-  # This is required for requesting the OIDC token
   id-token: write
-  # This is required for actions/checkout
-  contents: write
-  # This is required for FrogBot to create PR comments
+  contents: read
   pull-requests: write
-
 jobs:
   frogbot-scan:
     runs-on: ubuntu-latest
+    environment: frogbot
     steps:
-      - uses: actions/checkout@v4
-      
-      # This action sets up the JFrog CLI with the Artifactory URL and access token 
-      - name: Setup JFrog CLI
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup JFrog CLI (OIDC)
         uses: jfrog/setup-jfrog-cli@v4
         env:
           JF_URL: ${{ secrets.JF_URL }}
         with:
-          # oidc-provider-name: ${OIDC_PROVIDER_NAME} # <owner>/<repo>@github
-          oidc-provider-name: kamalkn24/new-repo1@github
-
-      - name: Configure pip to use Artifactory Virtual Repo
-        run: |           
-          jf pip-config --repo-resolve=sws-jf-example-python-remote --server-id-resolve=setup-jfrog-cli-server
-
-      - name: Run Frogbit@v2
+          oidc-provider-name: github-oidc
+      - name: Run Frogbot Scan
         uses: jfrog/frogbot@v2
         env:
           JF_URL: ${{ secrets.JF_URL }}
           JF_GIT_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Optional: turn on deeper CLI logs while we troubleshoot
           JFROG_CLI_LOG_LEVEL: "DEBUG"
+          JF_INCLUDE_ALL_VULNERABILITIES: "true"
+          JF_FAIL: "false"
           FROGBOT_LOG_LEVEL: "DEBUG"
-        with:
-          oidc-provider-name: kamalkn24/new-repo1@github 
